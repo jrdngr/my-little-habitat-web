@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+         "sourceMap": true,
+         "watch": true,
+         "outDir": "./js",
+         "allowJs": true
+    },
+    "include": [
+        "./src"
+    ]
+}

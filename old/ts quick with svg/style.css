@@ -1,0 +1,29 @@
+.organisms {
+	display: inline-block;
+	vertical-align: top;
+	border: 1px solid black;
+	padding: 10px;
+}
+
+.general {
+	padding-bottom: 50px;
+}
+
+.organism-controls {
+	margin-top: 50px;
+}
+
+.organism-properties {
+	display: inline-block;
+	vertical-align: top;
+	padding: 10px;
+	border: 1px solid black;
+}
+
+.organism-properties h3 {
+	margin: 0px;
+}
+
+.organism-properties input {
+	margin: 5px;
+}

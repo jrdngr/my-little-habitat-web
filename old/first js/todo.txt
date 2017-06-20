@@ -1,0 +1,10 @@
+1. Compartmentalize high level parts
+2. Clean up organisms
+2. a. Create a set of standard actions on Organism base class
+2. b. Try to rebuild existing organisms in terms of standard actions
+2. c. Collect all relevant info into organism object e.g. display name
+2. d. Create a simple scripting system for standard actions
+3. Clean up Neighbor class
+4. Optimize start state code
+5. Consider switching to TypeScript.  Do this immediately after cleanup.
+6. Create WebGL rendering option

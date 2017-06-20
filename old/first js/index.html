@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>My Little Habitat</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="./js/main.js"></script>
+	<script src="./js/helpers.js"></script>
+	<script src="./js/base.js"></script>
+	<script src="./js/organisms.js"></script>
+</head>
+<body onload="init()">
+	<svg width="500" height="500" id="canvas"></svg>
+	
+	<div class="organisms">
+		<div class="general">
+			<b>General</b><br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="plant" checked> Plant <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="herbivore"> Herbivore <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="parasite"> Parasite <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="vine"> Vine <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="wall"> Wall <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="empty"> Empty <br>
+		</div>
+		<div class="conway">
+			<b>Conway's Game of Life</b><br>
+			Hit "Stop", fill board with dead,<br>
+			make pattern with alive, hit "Start".<br>
+			Turning on the grid helps.<br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="gola"> Game of Life (alive) <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="gold"> Game of Life (dead) <br>
+		</div>
+		<div class="organism-controls">
+			<input type="number" id="brush-size" value="1" min="1" onchange="updateBrushSize()"></input>
+			Brush size <br>
+		</div>
+	</div>
+	<div class="organism-properties">
+		<h3 class="properties-title">Organism Properties</h3>
+		<div class="property-list">
+		</div>
+	</div>
+	
+	<div class="controls">
+		<button type="button" id="start" onclick="start()" disabled>Start</button>
+		<button type="button" id="stop" onclick="stop()">Stop</button>
+		<button type="button" id="reset" onclick="reset()">Reset</button>
+		<button type="button" id="fill" onclick="fill()">Fill with selected</button><br>
+		<input type="number" id="mspf" value="100" min="1" onchange="updateMspf()"></input>
+		Milliseconds per frame (Bigger is slower, 1 is fastest) <br>
+		<input type="number" id="grid-size" value="50" min="1" onchange="updateMspf()"></input>
+		<button type="button" id="set-grid-size" onclick="setGridSize()">Set grid size</button> (Chokes around 200)<br>
+		<input type="checkbox" id="show-grid" onclick="toggleGrid()">Show grid (resets grid)</input>
+	</div>
+</body>
+</html>
