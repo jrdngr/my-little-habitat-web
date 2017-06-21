@@ -60,7 +60,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                     var emptyNeighbors = this.getNeighborsOfType(neighbors, "empty");
                     if (emptyNeighbors.length > 0) {
                         var index = helpers_1.randomInt(0, emptyNeighbors.length);
-                        var newCell = gridManager.grid.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y);
+                        var newCell = gridManager.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y);
                         gridManager.setCellOccupant(newCell.x, newCell.y, new Plant(newCell));
                         this.energy = 0;
                         gridManager.addToTurnQueue(this.cell);
@@ -82,7 +82,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                 var gridManager = grid;
                 var neighbors = gridManager.getNeighborhood(this.cell.x, this.cell.y);
                 if (this.energy <= 0) {
-                    gridManager.grid.clearCell(this.cell.x, this.cell.y);
+                    gridManager.clearCell(this.cell.x, this.cell.y);
                 }
                 else {
                     var plantNeighbors = this.getNeighborsOfType(neighbors, "plant");
@@ -93,7 +93,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                         var newEnergy = void 0;
                         if (this.energy <= 200) {
                             newEnergy = this.energy + 5;
-                            gridManager.grid.clearCell(this.cell.x, this.cell.y);
+                            gridManager.clearCell(this.cell.x, this.cell.y);
                         }
                         else {
                             this.energy = Math.floor(this.energy / 2);
@@ -112,7 +112,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                             var newY = this.cell.y + helpers_1.randomSignedUnit();
                             var newCell = gridManager.getCell(newX, newY);
                             gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, this.energy));
-                            gridManager.grid.clearCell(this.cell.x, this.cell.y);
+                            gridManager.clearCell(this.cell.x, this.cell.y);
                         }
                         else {
                             gridManager.addToTurnQueue(this.cell);

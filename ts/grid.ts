@@ -94,11 +94,10 @@ export class Grid {
 }
 
 export interface GridManager {
-	readonly grid: Grid;
 	step(): void;
 	setCellOccupant(x: number, y: number, occupant: Occupant): void;
 	getCell(x: number, y: number): Cell;
-	getNeighborhood(x: number, y: number, name?: string);
+	getDimensions(): [number, number];
 }
 
 export class Cell {

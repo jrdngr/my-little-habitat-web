@@ -1,7 +1,7 @@
 define(["require", "exports", "organism-grid-manager", "organisms"], function (require, exports, organism_grid_manager_1, Organisms) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var GRID_WIDTH = 200;
+    var GRID_WIDTH = 300;
     var GRID_HEIGHT = GRID_WIDTH;
     var mouseDown = false;
     var cellsPerStepMultiplier = 1;
@@ -12,8 +12,8 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
         canvas.height = window.innerHeight;
         canvas.width = canvas.height;
         var gridManager = new organism_grid_manager_1.OrganismGridManager(GRID_WIDTH, GRID_HEIGHT, canvas, cellsPerStepMultiplier);
-        var xScale = canvas.width / gridManager.grid.width;
-        var yScale = canvas.height / (gridManager.grid.height - 1);
+        var xScale = canvas.width / gridManager.getDimensions()[0];
+        var yScale = canvas.height / (gridManager.getDimensions()[1] - 1);
         var setCell = function (event) {
             var rect = canvas.getBoundingClientRect();
             var _a = getGridCoordinates(event, rect, xScale, yScale), x = _a[0], y = _a[1];

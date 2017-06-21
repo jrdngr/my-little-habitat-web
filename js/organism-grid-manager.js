@@ -1,6 +1,7 @@
 define(["require", "exports", "grid"], function (require, exports, grid_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var MAX_CELLS_PER_STEP = 10000;
     var OrganismGridManager = (function () {
         function OrganismGridManager(width, height, canvas, cellsPerStepMultiplier) {
             if (cellsPerStepMultiplier === void 0) { cellsPerStepMultiplier = 1; }
@@ -9,7 +10,7 @@ define(["require", "exports", "grid"], function (require, exports, grid_1) {
             this.cellsPerStepMultiplier = cellsPerStepMultiplier;
         }
         OrganismGridManager.prototype.step = function () {
-            var cellsPerStep = this.turnQueue.length * this.cellsPerStepMultiplier;
+            var cellsPerStep = Math.min(this.turnQueue.length * this.cellsPerStepMultiplier, MAX_CELLS_PER_STEP);
             var cellsProcessed = 0;
             while (cellsProcessed < cellsPerStep) {
                 if (this.turnQueue.length > 0) {
@@ -25,6 +26,9 @@ define(["require", "exports", "grid"], function (require, exports, grid_1) {
         OrganismGridManager.prototype.setCellOccupant = function (x, y, occupant) {
             this.grid.setOccupant(x, y, occupant);
             this.addToTurnQueue(this.getCell(x, y));
+        };
+        OrganismGridManager.prototype.clearCell = function (x, y) {
+            this.grid.clearCell(x, y);
         };
         OrganismGridManager.prototype.getCell = function (x, y) {
             return this.grid.getCell(x, y);
@@ -49,6 +53,9 @@ define(["require", "exports", "grid"], function (require, exports, grid_1) {
                 });
             }
             return neighbors;
+        };
+        OrganismGridManager.prototype.getDimensions = function () {
+            return [this.grid.width, this.grid.height];
         };
         OrganismGridManager.prototype.addToTurnQueue = function (cell) {
             if (cell) {

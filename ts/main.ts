@@ -2,7 +2,7 @@ import { OrganismGridManager } from "organism-grid-manager";
 import { GridManager, Cell } from "grid";
 import * as Organisms from "organisms";
 
-const GRID_WIDTH: number = 200;
+const GRID_WIDTH: number = 300;
 const GRID_HEIGHT: number = GRID_WIDTH;
 
 let mouseDown: boolean = false;
@@ -18,8 +18,8 @@ function init() {
 
 	const gridManager: GridManager = new OrganismGridManager(GRID_WIDTH, GRID_HEIGHT, canvas, cellsPerStepMultiplier);
 
-	const xScale: number = canvas.width / gridManager.grid.width;
-	const yScale: number = canvas.height / (gridManager.grid.height - 1);
+	const xScale: number = canvas.width / gridManager.getDimensions()[0];
+	const yScale: number = canvas.height / (gridManager.getDimensions()[1] - 1);
 	
 	let setCell = function (event: MouseEvent) {
 		let rect: ClientRect = canvas.getBoundingClientRect();

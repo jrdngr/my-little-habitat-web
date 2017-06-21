@@ -1,7 +1,6 @@
 import { GridManager, Cell, Occupant } from "grid";
 import { OrganismGridManager } from "organism-grid-manager";
 import { randomInt, randomSignedUnit } from "helpers";
-import { Neighbor } from "neighbors";
 
 export const getOrganism = function(name: string, cell: Cell): Organism {
 	name = name.toLowerCase();
@@ -54,7 +53,7 @@ export class Plant extends Organism {
 				let emptyNeighbors = this.getNeighborsOfType(neighbors, "empty");
 				if (emptyNeighbors.length > 0) {
 					let index = randomInt(0, emptyNeighbors.length);
-					let newCell = gridManager.grid.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y)
+					let newCell = gridManager.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y)
 					gridManager.setCellOccupant(newCell.x, newCell.y, new Plant(newCell));
 					this.energy = 0;
 					gridManager.addToTurnQueue(this.cell);
@@ -72,7 +71,7 @@ export class Herbivore extends Organism {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid;
 			let neighbors: Cell[] = gridManager.getNeighborhood(this.cell.x, this.cell.y);
 			if (this.energy <= 0) {
-				gridManager.grid.clearCell(this.cell.x, this.cell.y);
+				gridManager.clearCell(this.cell.x, this.cell.y);
 			} else {
 				let plantNeighbors = this.getNeighborsOfType(neighbors, "plant");
 				if (plantNeighbors.length > 0) {
@@ -82,7 +81,7 @@ export class Herbivore extends Organism {
 					let newEnergy;
 					if (this.energy <= 200) {
 						newEnergy = this.energy + 5;
-						gridManager.grid.clearCell(this.cell.x, this.cell.y);
+						gridManager.clearCell(this.cell.x, this.cell.y);
 					} else {
 						this.energy = Math.floor(this.energy / 2);
 						newEnergy = this.energy;
@@ -99,7 +98,7 @@ export class Herbivore extends Organism {
 						let newY = this.cell.y + randomSignedUnit();
 						let newCell: Cell = gridManager.getCell(newX, newY);
 						gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, this.energy));
-						gridManager.grid.clearCell(this.cell.x, this.cell.y);
+						gridManager.clearCell(this.cell.x, this.cell.y);
 					} else {
 						gridManager.addToTurnQueue(this.cell);
 					}

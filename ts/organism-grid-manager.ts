@@ -1,9 +1,11 @@
 import { Grid, GridManager, Cell, Occupant } from "grid";
 import { Organism } from "organisms";
 
+const MAX_CELLS_PER_STEP = 10000;
+
 export class OrganismGridManager implements GridManager {
 
-    grid: Grid;
+    private readonly grid: Grid;
 
   	private turnQueue: number[];
 	private cellsPerStepMultiplier: number;
@@ -15,7 +17,7 @@ export class OrganismGridManager implements GridManager {
     }
 
     step() {
-		let cellsPerStep = this.turnQueue.length * this.cellsPerStepMultiplier;
+		let cellsPerStep = Math.min(this.turnQueue.length * this.cellsPerStepMultiplier, MAX_CELLS_PER_STEP);
 		let cellsProcessed = 0;
 		while (cellsProcessed < cellsPerStep) {
 			if (this.turnQueue.length > 0) {
@@ -34,6 +36,10 @@ export class OrganismGridManager implements GridManager {
 		this.addToTurnQueue(this.getCell(x, y));
     }
 	
+	clearCell(x:number, y: number): void {
+		this.grid.clearCell(x, y);
+	}
+
     getCell(x: number, y: number): Cell {
         return this.grid.getCell(x, y);
     }
@@ -59,6 +65,10 @@ export class OrganismGridManager implements GridManager {
 		}
 
 		return neighbors;
+	}
+
+	getDimensions(): [number, number] {
+		return [this.grid.width, this.grid.height];
 	}
 
     addToTurnQueue(cell: Cell) {
