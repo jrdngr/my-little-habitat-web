@@ -80,9 +80,15 @@ export class OrganismGridManager implements GridManager {
 	}
 
     addToTurnQueue(occupant: Occupant) {
-		if (occupant && occupant.cell) {
-			this.turnQueue.push(occupant.cell.y * this.grid.width + occupant.cell.x); 
-		}
+		this.addCellsToTurnQueue([occupant.cell]);
+	}
+
+	addCellsToTurnQueue(cells: Cell[]) {
+		cells.forEach(cell => {
+			if (cell) {
+				this.turnQueue.push(cell.y * this.grid.width + cell.x);
+			}
+		});
 	}
 
 	runCellBehavior(index: number) {

@@ -52,29 +52,18 @@ export class Herbivore extends Organism {
 			} else {
 				let plantNeighbors = gridManager.getNeighborhoodOfType(this, "plant");
 				if (plantNeighbors.length > 0) {
-					let index = randomInt(0, plantNeighbors.length);
-					let newX = plantNeighbors[index].x;
-					let newY = plantNeighbors[index].y;
-					let newEnergy;
 					if (this.energy <= 200) {
-						newEnergy = this.energy + 5;
-						gridManager.move(this, newX, newY);
-						gridManager.kill(this);
+						this.energy += 5;
+						gridManager.moveRandom(this, plantNeighbors);
 					} else {
-						this.energy = Math.floor(this.energy / 2);
-						gridManager.clone(this, newX, newY);
+						this.energy /= 2;
+						gridManager.cloneRandom(this, plantNeighbors);
 					}
-					neighbors.forEach(neighbor => {
-						if (neighbor && neighbor.occupant) {
-							gridManager.addToTurnQueue(neighbor.occupant);
-						}
-					});
+					gridManager.addCellsToTurnQueue(neighbors);
 				} else {
-					this.energy -= 3;
-					if (this.energy % 10 == 0) {
-						let newX = this.cell.x + randomSignedUnit();
-						let newY = this.cell.y + randomSignedUnit();
-						gridManager.move(this, newX, newY);
+					this.energy -= 5;
+					if (randomPercentage(10)) {
+						gridManager.moveRandom(this);
 					} else {
 						gridManager.addToTurnQueue(this);
 					}

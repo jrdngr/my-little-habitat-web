@@ -68,9 +68,15 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
             return [this.grid.width, this.grid.height];
         };
         OrganismGridManager.prototype.addToTurnQueue = function (occupant) {
-            if (occupant && occupant.cell) {
-                this.turnQueue.push(occupant.cell.y * this.grid.width + occupant.cell.x);
-            }
+            this.addCellsToTurnQueue([occupant.cell]);
+        };
+        OrganismGridManager.prototype.addCellsToTurnQueue = function (cells) {
+            var _this = this;
+            cells.forEach(function (cell) {
+                if (cell) {
+                    _this.turnQueue.push(cell.y * _this.grid.width + cell.x);
+                }
+            });
         };
         OrganismGridManager.prototype.runCellBehavior = function (index) {
             var x = index % this.grid.width;

@@ -67,31 +67,20 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                 else {
                     var plantNeighbors = gridManager.getNeighborhoodOfType(this, "plant");
                     if (plantNeighbors.length > 0) {
-                        var index = helpers_1.randomInt(0, plantNeighbors.length);
-                        var newX = plantNeighbors[index].x;
-                        var newY = plantNeighbors[index].y;
-                        var newEnergy = void 0;
                         if (this.energy <= 200) {
-                            newEnergy = this.energy + 5;
-                            gridManager.move(this, newX, newY);
-                            gridManager.kill(this);
+                            this.energy += 5;
+                            gridManager.moveRandom(this, plantNeighbors);
                         }
                         else {
-                            this.energy = Math.floor(this.energy / 2);
-                            gridManager.clone(this, newX, newY);
+                            this.energy /= 2;
+                            gridManager.cloneRandom(this, plantNeighbors);
                         }
-                        neighbors.forEach(function (neighbor) {
-                            if (neighbor && neighbor.occupant) {
-                                gridManager.addToTurnQueue(neighbor.occupant);
-                            }
-                        });
+                        gridManager.addCellsToTurnQueue(neighbors);
                     }
                     else {
-                        this.energy -= 3;
-                        if (this.energy % 10 == 0) {
-                            var newX = this.cell.x + helpers_1.randomSignedUnit();
-                            var newY = this.cell.y + helpers_1.randomSignedUnit();
-                            gridManager.move(this, newX, newY);
+                        this.energy -= 5;
+                        if (helpers_1.randomPercentage(10)) {
+                            gridManager.moveRandom(this);
                         }
                         else {
                             gridManager.addToTurnQueue(this);
