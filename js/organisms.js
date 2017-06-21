@@ -8,24 +8,24 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "grid", "helpers", "neighbors"], function (require, exports, grid_1, helpers_1, neighbors_1) {
+define(["require", "exports", "grid", "helpers"], function (require, exports, grid_1, helpers_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getOrganism = function (name) {
+    exports.getOrganism = function (name, cell) {
         name = name.toLowerCase();
         switch (name) {
             case "plant":
-                return new Plant();
+                return new Plant(cell);
             case "herbivore":
-                return new Herbivore();
+                return new Herbivore(cell);
             default:
-                return new Plant();
+                return new Plant(cell);
         }
     };
     var Organism = (function (_super) {
         __extends(Organism, _super);
-        function Organism(name, color, behavior) {
-            var _this = _super.call(this, name, color) || this;
+        function Organism(name, color, cell, behavior) {
+            var _this = _super.call(this, name, color, cell) || this;
             _this.behavior = behavior || function () { };
             return _this;
         }
@@ -43,26 +43,27 @@ define(["require", "exports", "grid", "helpers", "neighbors"], function (require
     exports.Organism = Organism;
     var Plant = (function (_super) {
         __extends(Plant, _super);
-        function Plant(startEnergy) {
+        function Plant(cell, startEnergy) {
             if (startEnergy === void 0) { startEnergy = 0; }
-            var _this = _super.call(this, "plant", "green") || this;
+            var _this = _super.call(this, "plant", "green", cell) || this;
             _this.energy = startEnergy;
             _this.behavior = function (grid) {
+                var gridManager = grid;
+                var neighbors = gridManager.getNeighborhood(this.cell.x, this.cell.y);
                 if (this.energy < 1) {
                     if (helpers_1.randomInt(0, 100) == 1) {
                         this.energy++;
                     }
-                    grid.addToTurnQueue(neighbors[neighbors_1.Neighbor.Self]);
+                    gridManager.addToTurnQueue(this.cell);
                 }
                 else {
                     var emptyNeighbors = this.getNeighborsOfType(neighbors, "empty");
                     if (emptyNeighbors.length > 0) {
                         var index = helpers_1.randomInt(0, emptyNeighbors.length);
-                        var newX = emptyNeighbors[index].x;
-                        var newY = emptyNeighbors[index].y;
-                        grid.setOccupant(newX, newY, new Plant());
+                        var newCell = gridManager.grid.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y);
+                        gridManager.grid.setOccupant(newCell.x, newCell.y, new Plant(newCell));
                         this.energy = 0;
-                        grid.addToTurnQueue(neighbors[neighbors_1.Neighbor.Self]);
+                        gridManager.addToTurnQueue(this.cell);
                     }
                 }
             };
@@ -73,15 +74,15 @@ define(["require", "exports", "grid", "helpers", "neighbors"], function (require
     exports.Plant = Plant;
     var Herbivore = (function (_super) {
         __extends(Herbivore, _super);
-        function Herbivore(startEnergy) {
+        function Herbivore(cell, startEnergy) {
             if (startEnergy === void 0) { startEnergy = 50; }
-            var _this = _super.call(this, "herbivore", "blue") || this;
+            var _this = _super.call(this, "herbivore", "blue", cell) || this;
             _this.energy = startEnergy;
             _this.behavior = function (grid) {
-                var x = neighbors[neighbors_1.Neighbor.Self].x;
-                var y = neighbors[neighbors_1.Neighbor.Self].y;
+                var gridManager = grid;
+                var neighbors = gridManager.getNeighborhood(this.cell.x, this.cell.y);
                 if (this.energy <= 0) {
-                    grid.clearCell(x, y);
+                    gridManager.grid.clearCell(this.cell.x, this.cell.y);
                 }
                 else {
                     var plantNeighbors = this.getNeighborsOfType(neighbors, "plant");
@@ -92,27 +93,29 @@ define(["require", "exports", "grid", "helpers", "neighbors"], function (require
                         var newEnergy = void 0;
                         if (this.energy <= 200) {
                             newEnergy = this.energy + 5;
-                            grid.clearCell(x, y);
+                            gridManager.grid.clearCell(this.cell.x, this.cell.y);
                         }
                         else {
                             this.energy = Math.floor(this.energy / 2);
                             newEnergy = this.energy;
                         }
-                        grid.setOccupant(newX, newY, new Herbivore(newEnergy));
+                        var newCell = gridManager.getCell(newX, newY);
+                        gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, newEnergy));
                         neighbors.forEach(function (neighbor) {
-                            grid.addToTurnQueue(neighbor);
+                            gridManager.addToTurnQueue(neighbor);
                         });
                     }
                     else {
                         this.energy -= 3;
                         if (this.energy % 10 == 0) {
-                            var newX = x + helpers_1.randomSignedUnit();
-                            var newY = y + helpers_1.randomSignedUnit();
-                            grid.setOccupant(newX, newY, new Herbivore(this.energy));
-                            grid.clearCell(x, y);
+                            var newX = this.cell.x + helpers_1.randomSignedUnit();
+                            var newY = this.cell.y + helpers_1.randomSignedUnit();
+                            var newCell = gridManager.getCell(newX, newY);
+                            gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, this.energy));
+                            gridManager.grid.clearCell(this.cell.x, this.cell.y);
                         }
                         else {
-                            grid.addToTurnQueue(neighbors[neighbors_1.Neighbor.Self]);
+                            gridManager.addToTurnQueue(this.cell);
                         }
                     }
                 }

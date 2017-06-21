@@ -50,7 +50,8 @@ define(["require", "exports"], function (require, exports) {
         Grid.prototype.clearCell = function (x, y) {
             var index = this.getIndex(x, y);
             if (index != null) {
-                this.cells[index].occupant = new Empty();
+                var cell = this.cells[index];
+                cell.occupant = new Empty(cell);
                 this.drawCell(x, y);
             }
         };
@@ -89,23 +90,24 @@ define(["require", "exports"], function (require, exports) {
         function Cell(x, y) {
             this.x = x;
             this.y = y;
-            this.occupant = new Empty();
+            this.occupant = new Empty(this);
         }
         return Cell;
     }());
     exports.Cell = Cell;
     var Occupant = (function () {
-        function Occupant(name, color, behavior) {
+        function Occupant(name, color, cell) {
             this.name = name;
             this.color = color;
+            this.cell = cell;
         }
         return Occupant;
     }());
     exports.Occupant = Occupant;
     var Empty = (function (_super) {
         __extends(Empty, _super);
-        function Empty() {
-            return _super.call(this, "empty", "black") || this;
+        function Empty(cell) {
+            return _super.call(this, "empty", "black", cell) || this;
         }
         return Empty;
     }(Occupant));

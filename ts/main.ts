@@ -1,5 +1,5 @@
 import { OrganismGridManager } from "organism-grid-manager";
-import { GridManager } from "grid";
+import { GridManager, Cell } from "grid";
 import * as Organisms from "organisms";
 
 const GRID_WIDTH: number = 200;
@@ -24,7 +24,8 @@ function init() {
 	let setCell = function (event: MouseEvent) {
 		let rect: ClientRect = canvas.getBoundingClientRect();
 		let [x, y] = getGridCoordinates(event, rect, xScale, yScale);
-		gridManager.grid.setOccupant(x, y, Organisms.getOrganism(selected));
+		let cell: Cell = gridManager.getCell(x, y);
+		gridManager.grid.setOccupant(x, y, Organisms.getOrganism(selected, cell));
 	}
 
 	let setSelectedElement = function() {

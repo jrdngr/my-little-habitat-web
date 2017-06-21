@@ -3,15 +3,15 @@ import { OrganismGridManager } from "organism-grid-manager";
 import { randomInt, randomSignedUnit } from "helpers";
 import { Neighbor } from "neighbors";
 
-export const getOrganism = function(name: string): Organism {
+export const getOrganism = function(name: string, cell: Cell): Organism {
 	name = name.toLowerCase();
 	switch(name) {
 		case "plant":
-			return new Plant();
+			return new Plant(cell);
 		case "herbivore":
-			return new Herbivore();
+			return new Herbivore(cell);
 		default:
-			return new Plant(); 
+			return new Plant(cell); 
 	}
 }
 
@@ -70,8 +70,9 @@ export class Herbivore extends Organism {
 		this.energy = startEnergy;
 		this.behavior = function(grid: GridManager) {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid;
+			let neighbors: Cell[] = gridManager.getNeighborhood(this.cell.x, this.cell.y);
 			if (this.energy <= 0) {
-				gridManager.clearCell(this.cell.x, this.cell.y);
+				gridManager.grid.clearCell(this.cell.x, this.cell.y);
 			} else {
 				let plantNeighbors = this.getNeighborsOfType(neighbors, "plant");
 				if (plantNeighbors.length > 0) {
@@ -81,24 +82,26 @@ export class Herbivore extends Organism {
 					let newEnergy;
 					if (this.energy <= 200) {
 						newEnergy = this.energy + 5;
-						gridManager.clearCell(x, y);
+						gridManager.grid.clearCell(this.cell.x, this.cell.y);
 					} else {
 						this.energy = Math.floor(this.energy / 2);
 						newEnergy = this.energy;
 					}
-					gridManager.setOccupant(newX, newY, new Herbivore(newEnergy));
+					let newCell: Cell = gridManager.getCell(newX, newY);
+					gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, newEnergy));
 					neighbors.forEach(neighbor => {
 						gridManager.addToTurnQueue(neighbor);
 					});
 				} else {
 					this.energy -= 3;
 					if (this.energy % 10 == 0) {
-						let newX = x + randomSignedUnit();
-						let newY = y + randomSignedUnit();
-						gridManager.setOccupant(newX, newY, new Herbivore(this.energy));
-						gridManager.clearCell(x, y);
+						let newX = this.cell.x + randomSignedUnit();
+						let newY = this.cell.y + randomSignedUnit();
+						let newCell: Cell = gridManager.getCell(newX, newY);
+						gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, this.energy));
+						gridManager.grid.clearCell(this.cell.x, this.cell.y);
 					} else {
-						gridManager.addToTurnQueue(neighbors[Neighbor.Self]);
+						gridManager.addToTurnQueue(this.cell);
 					}
 				}
 			}
