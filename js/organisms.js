@@ -11,13 +11,20 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "grid", "helpers"], function (require, exports, grid_1, helpers_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getOrganism = function (name, cell) {
-        name = name.toLowerCase();
-        switch (name) {
-            case "plant":
+    var Organisms;
+    (function (Organisms) {
+        Organisms[Organisms["Plant"] = 0] = "Plant";
+        Organisms[Organisms["Herbivore"] = 1] = "Herbivore";
+        Organisms[Organisms["Parasite"] = 2] = "Parasite";
+    })(Organisms = exports.Organisms || (exports.Organisms = {}));
+    exports.getOrganism = function (type, cell) {
+        switch (type) {
+            case Organisms.Plant:
                 return new Plant(cell);
-            case "herbivore":
+            case Organisms.Herbivore:
                 return new Herbivore(cell);
+            case Organisms.Parasite:
+                return new Parasite(cell);
             default:
                 return new Plant(cell);
         }
@@ -38,6 +45,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             if (startEnergy === void 0) { startEnergy = 0; }
             var _this = _super.call(this, "plant", "green", cell) || this;
             _this.energy = startEnergy;
+            _this.type = Organisms.Plant;
             _this.behavior = function (grid) {
                 var gridManager = grid;
                 if (helpers_1.randomPercentage(1)) {
@@ -58,33 +66,33 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             if (startEnergy === void 0) { startEnergy = 50; }
             var _this = _super.call(this, "herbivore", "blue", cell) || this;
             _this.energy = startEnergy;
+            _this.type = Organisms.Herbivore;
             _this.behavior = function (grid) {
                 var gridManager = grid;
-                var neighbors = gridManager.getNeighborhood(this);
+                var neighbors = gridManager.getNeighbors(this);
                 if (this.energy <= 0) {
                     gridManager.kill(this);
+                    return;
                 }
-                else {
-                    var plantNeighbors = gridManager.getNeighborhoodOfType(this, "plant");
-                    if (plantNeighbors.length > 0) {
-                        if (this.energy <= 200) {
-                            this.energy += 5;
-                            gridManager.moveRandom(this, plantNeighbors);
-                        }
-                        else {
-                            this.energy /= 2;
-                            gridManager.cloneRandom(this, plantNeighbors);
-                        }
-                        gridManager.addCellsToTurnQueue(neighbors);
+                var plantNeighbors = gridManager.getNeighborsOfType(this, "plant");
+                if (plantNeighbors.length > 0) {
+                    if (this.energy <= 200) {
+                        this.energy += 5;
+                        gridManager.moveRandom(this, plantNeighbors);
                     }
                     else {
-                        this.energy -= 5;
-                        if (helpers_1.randomPercentage(10)) {
-                            gridManager.moveRandom(this);
-                        }
-                        else {
-                            gridManager.addToTurnQueue(this);
-                        }
+                        this.energy /= 2;
+                        gridManager.cloneRandom(this, plantNeighbors);
+                    }
+                    gridManager.addCellsToTurnQueue(neighbors);
+                }
+                else {
+                    this.energy -= 10;
+                    if (helpers_1.randomPercentage(10)) {
+                        gridManager.moveRandom(this);
+                    }
+                    else {
+                        gridManager.addToTurnQueue(this);
                     }
                 }
             };
@@ -93,5 +101,41 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
         return Herbivore;
     }(Organism));
     exports.Herbivore = Herbivore;
+    var Parasite = (function (_super) {
+        __extends(Parasite, _super);
+        function Parasite(cell, startEnergy) {
+            if (startEnergy === void 0) { startEnergy = 10; }
+            var _this = _super.call(this, "parasite", "red", cell) || this;
+            _this.energy = startEnergy;
+            _this.type = Organisms.Parasite;
+            _this.behavior = function (grid) {
+                var gridManager = grid;
+                if (this.energy <= 0) {
+                    gridManager.kill(this);
+                    return;
+                }
+                var parasiteNeighbors = gridManager.getNeighborsOfType(this, "parasite", true);
+                var plantNeighbors = gridManager.getNeighborsOfType(this, "plant", true);
+                if (parasiteNeighbors.length >= 5 || plantNeighbors.length == 0) {
+                    this.energy -= 1;
+                    gridManager.addToTurnQueue(this);
+                }
+                else if (parasiteNeighbors.length < 6) {
+                    this.energy += 1;
+                    gridManager.addToTurnQueue(this);
+                }
+                if (this.energy > 250) {
+                    if (plantNeighbors.length > 0) {
+                        this.energy = 1;
+                        gridManager.cloneRandom(this, plantNeighbors);
+                        gridManager.addCellsToTurnQueue(plantNeighbors);
+                    }
+                }
+            };
+            return _this;
+        }
+        return Parasite;
+    }(Organism));
+    exports.Parasite = Parasite;
 });
 //# sourceMappingURL=organisms.js.map

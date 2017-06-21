@@ -45,11 +45,11 @@ export class OrganismGridManager implements GridManager {
         return this.grid.getCell(x, y);
     }
 
-	getNeighborhood(occupant: Occupant, useDiagonals: boolean = false): Cell[] {
-		return this.getNeighborhoodOfCell(occupant.cell.x, occupant.cell.y, useDiagonals);
+	getNeighbors(occupant: Occupant, useDiagonals: boolean = false): Cell[] {
+		return this.getNeighborsOfCell(occupant.cell.x, occupant.cell.y, useDiagonals);
 	}
 
-    getNeighborhoodOfCell(x: number, y: number, useDiagonals: boolean = false) {
+    getNeighborsOfCell(x: number, y: number, useDiagonals: boolean = false) {
 		let neighbors: Cell[] = [];
 		neighbors.push(this.grid.getCell(x, y));
 		neighbors.push(this.grid.getCell(x, y-1));
@@ -65,8 +65,8 @@ export class OrganismGridManager implements GridManager {
 		return neighbors;
 	}
 
-	getNeighborhoodOfType(occupant: Occupant, type: string, useDiagonals: boolean = false) {
-		return this.getNeighborhood(occupant, useDiagonals).filter(neighbor => {
+	getNeighborsOfType(occupant: Occupant, type: string, useDiagonals: boolean = false) {
+		return this.getNeighbors(occupant, useDiagonals).filter(neighbor => {
 			if (neighbor) {
 				return neighbor.occupant.name == type;
 			} else {
@@ -111,7 +111,7 @@ export class OrganismGridManager implements GridManager {
 
 	 moveRandom(organism: Organism, availableCells?: Cell[]): void {
 		if (!availableCells) {
-			availableCells = this.getNeighborhoodOfType(organism, "empty");
+			availableCells = this.getNeighborsOfType(organism, "empty");
 		}
 		if (availableCells.length > 0) {
 			this.cloneRandom(organism, availableCells);
@@ -121,7 +121,7 @@ export class OrganismGridManager implements GridManager {
 
 	 clone(organism: Organism, newX: number, newY: number, startingEnergy?: number): void {
 		let newCell: Cell = this.getCell(newX, newY);
-		let newOrganism: Organism = getOrganism(organism.name, newCell);
+		let newOrganism: Organism = getOrganism(organism.type, newCell);
 		newOrganism.energy = startingEnergy || organism.energy;
 		this.setCellOccupant(newX, newY, newOrganism);
 		this.addToTurnQueue(organism);
@@ -129,7 +129,7 @@ export class OrganismGridManager implements GridManager {
 
 	 cloneRandom(organism: Organism, availableCells?: Cell[]): void {
 		if (!availableCells) {
-			availableCells = this.getNeighborhoodOfType(organism, "empty");
+			availableCells = this.getNeighborsOfType(organism, "empty");
 		}
 		if (availableCells.length > 0) {
 			let index = randomInt(0, availableCells.length);

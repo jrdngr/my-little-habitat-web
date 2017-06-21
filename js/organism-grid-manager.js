@@ -33,11 +33,11 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
         OrganismGridManager.prototype.getCell = function (x, y) {
             return this.grid.getCell(x, y);
         };
-        OrganismGridManager.prototype.getNeighborhood = function (occupant, useDiagonals) {
+        OrganismGridManager.prototype.getNeighbors = function (occupant, useDiagonals) {
             if (useDiagonals === void 0) { useDiagonals = false; }
-            return this.getNeighborhoodOfCell(occupant.cell.x, occupant.cell.y, useDiagonals);
+            return this.getNeighborsOfCell(occupant.cell.x, occupant.cell.y, useDiagonals);
         };
-        OrganismGridManager.prototype.getNeighborhoodOfCell = function (x, y, useDiagonals) {
+        OrganismGridManager.prototype.getNeighborsOfCell = function (x, y, useDiagonals) {
             if (useDiagonals === void 0) { useDiagonals = false; }
             var neighbors = [];
             neighbors.push(this.grid.getCell(x, y));
@@ -53,9 +53,9 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
             }
             return neighbors;
         };
-        OrganismGridManager.prototype.getNeighborhoodOfType = function (occupant, type, useDiagonals) {
+        OrganismGridManager.prototype.getNeighborsOfType = function (occupant, type, useDiagonals) {
             if (useDiagonals === void 0) { useDiagonals = false; }
-            return this.getNeighborhood(occupant, useDiagonals).filter(function (neighbor) {
+            return this.getNeighbors(occupant, useDiagonals).filter(function (neighbor) {
                 if (neighbor) {
                     return neighbor.occupant.name == type;
                 }
@@ -95,7 +95,7 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
         };
         OrganismGridManager.prototype.moveRandom = function (organism, availableCells) {
             if (!availableCells) {
-                availableCells = this.getNeighborhoodOfType(organism, "empty");
+                availableCells = this.getNeighborsOfType(organism, "empty");
             }
             if (availableCells.length > 0) {
                 this.cloneRandom(organism, availableCells);
@@ -104,14 +104,14 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
         };
         OrganismGridManager.prototype.clone = function (organism, newX, newY, startingEnergy) {
             var newCell = this.getCell(newX, newY);
-            var newOrganism = organisms_1.getOrganism(organism.name, newCell);
+            var newOrganism = organisms_1.getOrganism(organism.type, newCell);
             newOrganism.energy = startingEnergy || organism.energy;
             this.setCellOccupant(newX, newY, newOrganism);
             this.addToTurnQueue(organism);
         };
         OrganismGridManager.prototype.cloneRandom = function (organism, availableCells) {
             if (!availableCells) {
-                availableCells = this.getNeighborhoodOfType(organism, "empty");
+                availableCells = this.getNeighborsOfType(organism, "empty");
             }
             if (availableCells.length > 0) {
                 var index = helpers_1.randomInt(0, availableCells.length);

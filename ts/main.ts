@@ -1,13 +1,13 @@
 import { OrganismGridManager } from "organism-grid-manager";
 import { GridManager, Cell } from "grid";
-import * as Organisms from "organisms";
+import { Organisms, getOrganism } from "organisms";
 
 const GRID_WIDTH: number = 200;
 const GRID_HEIGHT: number = GRID_WIDTH;
 
 let mouseDown: boolean = false;
 let cellsPerStepMultiplier: number = 2;
-let selected: string = "plant";
+let selected: Organisms = Organisms.Plant;
 
 init();
 
@@ -26,12 +26,12 @@ function init() {
 		let rect: ClientRect = canvas.getBoundingClientRect();
 		let [x, y] = getGridCoordinates(event, rect, xScale, yScale);
 		let cell: Cell = gridManager.getCell(x, y);
-		gridManager.setCellOccupant(x, y, Organisms.getOrganism(selected, cell));
+		gridManager.setCellOccupant(x, y, getOrganism(selected, cell));
 	}
 
 	let setSelectedElement = function() {
 		let selectedElement: HTMLElement = document.getElementById("selected-organism");
-		selectedElement.innerHTML = selected;
+		selectedElement.innerHTML = selected.toString();
 	}
 
 	canvas.addEventListener('mousemove', function(event) {
@@ -49,10 +49,13 @@ function init() {
 	document.onkeypress = function(event) {
 		switch (event.keyCode) {
 			case 49:
-				selected = "plant";
+				selected = Organisms.Plant;
 				break;
 			case 50:
-				selected = "herbivore";
+				selected = Organisms.Herbivore;
+				break;
+			case 51:
+				selected = Organisms.Parasite;
 				break;
 			default:
 				break;
