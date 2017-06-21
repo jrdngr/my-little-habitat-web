@@ -121,7 +121,7 @@ export class OrganismGridManager implements GridManager {
 
 	 clone(organism: Organism, newX: number, newY: number, startingEnergy?: number): void {
 		let newCell: Cell = this.getCell(newX, newY);
-		let newOrganism: Organism = getOrganism(organism.type, newCell);
+		let newOrganism: Organism = getOrganism(organism.name, newCell);
 		newOrganism.energy = startingEnergy || organism.energy;
 		this.setCellOccupant(newX, newY, newOrganism);
 		this.addToTurnQueue(organism);

@@ -1,13 +1,15 @@
 import { OrganismGridManager } from "organism-grid-manager";
 import { GridManager, Cell } from "grid";
-import { Organisms, getOrganism } from "organisms";
+import { getOrganism } from "organisms";
 
 const GRID_WIDTH: number = 200;
 const GRID_HEIGHT: number = GRID_WIDTH;
 
 let mouseDown: boolean = false;
 let cellsPerStepMultiplier: number = 2;
-let selected: Organisms = Organisms.Plant;
+let selected: string = "plant";
+
+let selections: HTMLInputElement[] = [];
 
 init();
 
@@ -28,12 +30,6 @@ function init() {
 		let cell: Cell = gridManager.getCell(x, y);
 		gridManager.setCellOccupant(x, y, getOrganism(selected, cell));
 	}
-
-	let setSelectedElement = function() {
-		let selectedElement: HTMLElement = document.getElementById("selected-organism");
-		selectedElement.innerHTML = selected.toString();
-	}
-
 	canvas.addEventListener('mousemove', function(event) {
 		if (mouseDown) {
 			setCell(event);
@@ -46,24 +42,7 @@ function init() {
 	canvas.addEventListener('mouseup', function() { mouseDown = false });
 	canvas.addEventListener('mouseleave',function() { mouseDown = false});
 
-	document.onkeypress = function(event) {
-		switch (event.keyCode) {
-			case 49:
-				selected = Organisms.Plant;
-				break;
-			case 50:
-				selected = Organisms.Herbivore;
-				break;
-			case 51:
-				selected = Organisms.Parasite;
-				break;
-			default:
-				break;
-		}
-		setSelectedElement();
-	};
-
-	setSelectedElement();
+	createControls();
 
 	mainLoop(gridManager);
 }
@@ -77,4 +56,20 @@ function getGridCoordinates(event: MouseEvent, rect: ClientRect, xScale: number,
 	let x: number = Math.floor((event.clientX - rect.left) / xScale);
 	let y: number = Math.floor((event.clientY - rect.top) / yScale);
 	return [x, y];
+}
+
+function createControls() {
+	selections.push(<HTMLInputElement>document.getElementById('organism-plant'));
+	selections.push(<HTMLInputElement>document.getElementById('organism-herbivore'));
+	selections.push(<HTMLInputElement>document.getElementById('organism-parasite'));
+
+	selections.forEach(selection => selection.onclick = selectionChanged);
+}
+
+function selectionChanged() {
+	selections.forEach(selection => {
+		if (selection.checked) {
+			selected = selection.value;
+		}
+	});
 }

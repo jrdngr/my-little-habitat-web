@@ -11,19 +11,13 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "grid", "helpers"], function (require, exports, grid_1, helpers_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Organisms;
-    (function (Organisms) {
-        Organisms[Organisms["Plant"] = 0] = "Plant";
-        Organisms[Organisms["Herbivore"] = 1] = "Herbivore";
-        Organisms[Organisms["Parasite"] = 2] = "Parasite";
-    })(Organisms = exports.Organisms || (exports.Organisms = {}));
-    exports.getOrganism = function (type, cell) {
-        switch (type) {
-            case Organisms.Plant:
+    exports.getOrganism = function (name, cell) {
+        switch (name) {
+            case "plant":
                 return new Plant(cell);
-            case Organisms.Herbivore:
+            case "herbivore":
                 return new Herbivore(cell);
-            case Organisms.Parasite:
+            case "parasite":
                 return new Parasite(cell);
             default:
                 return new Plant(cell);
@@ -45,7 +39,6 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             if (startEnergy === void 0) { startEnergy = 0; }
             var _this = _super.call(this, "plant", "green", cell) || this;
             _this.energy = startEnergy;
-            _this.type = Organisms.Plant;
             _this.behavior = function (grid) {
                 var gridManager = grid;
                 if (helpers_1.randomPercentage(1)) {
@@ -66,7 +59,6 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             if (startEnergy === void 0) { startEnergy = 50; }
             var _this = _super.call(this, "herbivore", "blue", cell) || this;
             _this.energy = startEnergy;
-            _this.type = Organisms.Herbivore;
             _this.behavior = function (grid) {
                 var gridManager = grid;
                 var neighbors = gridManager.getNeighbors(this);
@@ -107,7 +99,6 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             if (startEnergy === void 0) { startEnergy = 10; }
             var _this = _super.call(this, "parasite", "red", cell) || this;
             _this.energy = startEnergy;
-            _this.type = Organisms.Parasite;
             _this.behavior = function (grid) {
                 var gridManager = grid;
                 if (this.energy <= 0) {

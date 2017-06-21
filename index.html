@@ -9,8 +9,15 @@
 <body>
     <canvas id="canvas" width="1" height="1"></canvas>
     <div id="controls">
-        <div class="info">
-            <p>Selected: <span id="selected-organism"></span>
+        <div class="organisms">
+			<input type="radio" name="organism" id="organism-plant" value="plant" checked> Plant <br>
+			<input type="radio" name="organism" id="organism-herbivore" value="herbivore"> Herbivore <br>
+			<input type="radio" name="organism" id="organism-parasite" value="parasite"> Parasite <br>
+			<!--
+            <input type="radio" name="organism" onclick="selectionChanged()" value="vine"> Vine <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="wall"> Wall <br>
+			<input type="radio" name="organism" onclick="selectionChanged()" value="empty"> Empty <br>
+            -->
         </div>
     </div>
 </body>

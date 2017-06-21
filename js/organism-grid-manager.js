@@ -104,7 +104,7 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
         };
         OrganismGridManager.prototype.clone = function (organism, newX, newY, startingEnergy) {
             var newCell = this.getCell(newX, newY);
-            var newOrganism = organisms_1.getOrganism(organism.type, newCell);
+            var newOrganism = organisms_1.getOrganism(organism.name, newCell);
             newOrganism.energy = startingEnergy || organism.energy;
             this.setCellOccupant(newX, newY, newOrganism);
             this.addToTurnQueue(organism);

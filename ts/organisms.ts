@@ -2,19 +2,13 @@ import { GridManager, Cell, Occupant } from "grid";
 import { OrganismGridManager } from "organism-grid-manager";
 import { randomInt, randomSignedUnit, randomPercentage } from "helpers";
 
-export enum Organisms {
-	Plant,
-	Herbivore,
-	Parasite
-}
-
-export const getOrganism = function(type: Organisms, cell: Cell): Organism {
-	switch(type) {
-		case Organisms.Plant:
+export const getOrganism = function(name: string, cell: Cell): Organism {
+	switch(name) {
+		case "plant":
 			return new Plant(cell);
-		case Organisms.Herbivore:
+		case "herbivore":
 			return new Herbivore(cell);
-		case Organisms.Parasite:
+		case "parasite":
 			return new Parasite(cell);
 		default:
 			return new Plant(cell); 
@@ -23,7 +17,6 @@ export const getOrganism = function(type: Organisms, cell: Cell): Organism {
 
 export class Organism extends Occupant {
 	energy: number;
-	type: Organisms;
 	behavior: (grid: GridManager) => void;
 
 	constructor(name: string, color: string, cell: Cell, behavior?) {
@@ -37,7 +30,6 @@ export class Plant extends Organism {
 	constructor(cell: Cell, startEnergy: number = 0) {
 		super("plant", "green", cell);
 		this.energy = startEnergy;
-		this.type = Organisms.Plant;
 		this.behavior = function(grid: GridManager) {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid; 
 			if (randomPercentage(1)) {
@@ -53,7 +45,6 @@ export class Herbivore extends Organism {
 	constructor(cell: Cell, startEnergy: number = 50) {
 		super("herbivore", "blue", cell);
 		this.energy = startEnergy;
-		this.type = Organisms.Herbivore;
 		this.behavior = function(grid: GridManager) {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid;
 			let neighbors: Cell[] = gridManager.getNeighbors(this);
@@ -87,7 +78,6 @@ export class Parasite extends Organism {
 	constructor(cell: Cell, startEnergy: number = 10) {
 		super("parasite", "red", cell);
 		this.energy = startEnergy;
-		this.type = Organisms.Parasite;
 		this.behavior = function(grid: GridManager) {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid;
 			if (this.energy <= 0) {

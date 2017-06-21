@@ -5,7 +5,8 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
     var GRID_HEIGHT = GRID_WIDTH;
     var mouseDown = false;
     var cellsPerStepMultiplier = 2;
-    var selected = organisms_1.Organisms.Plant;
+    var selected = "plant";
+    var selections = [];
     init();
     function init() {
         var canvas = document.getElementById("canvas");
@@ -20,10 +21,6 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
             var cell = gridManager.getCell(x, y);
             gridManager.setCellOccupant(x, y, organisms_1.getOrganism(selected, cell));
         };
-        var setSelectedElement = function () {
-            var selectedElement = document.getElementById("selected-organism");
-            selectedElement.innerHTML = selected.toString();
-        };
         canvas.addEventListener('mousemove', function (event) {
             if (mouseDown) {
                 setCell(event);
@@ -35,23 +32,7 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
         });
         canvas.addEventListener('mouseup', function () { mouseDown = false; });
         canvas.addEventListener('mouseleave', function () { mouseDown = false; });
-        document.onkeypress = function (event) {
-            switch (event.keyCode) {
-                case 49:
-                    selected = organisms_1.Organisms.Plant;
-                    break;
-                case 50:
-                    selected = organisms_1.Organisms.Herbivore;
-                    break;
-                case 51:
-                    selected = organisms_1.Organisms.Parasite;
-                    break;
-                default:
-                    break;
-            }
-            setSelectedElement();
-        };
-        setSelectedElement();
+        createControls();
         mainLoop(gridManager);
     }
     function mainLoop(grid) {
@@ -62,6 +43,19 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
         var x = Math.floor((event.clientX - rect.left) / xScale);
         var y = Math.floor((event.clientY - rect.top) / yScale);
         return [x, y];
+    }
+    function createControls() {
+        selections.push(document.getElementById('organism-plant'));
+        selections.push(document.getElementById('organism-herbivore'));
+        selections.push(document.getElementById('organism-parasite'));
+        selections.forEach(function (selection) { return selection.onclick = selectionChanged; });
+    }
+    function selectionChanged() {
+        selections.forEach(function (selection) {
+            if (selection.checked) {
+                selected = selection.value;
+            }
+        });
     }
 });
 //# sourceMappingURL=main.js.map
