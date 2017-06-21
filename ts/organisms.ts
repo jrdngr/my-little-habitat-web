@@ -55,7 +55,7 @@ export class Plant extends Organism {
 				if (emptyNeighbors.length > 0) {
 					let index = randomInt(0, emptyNeighbors.length);
 					let newCell = gridManager.grid.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y)
-					gridManager.grid.setOccupant(newCell.x, newCell.y, new Plant(newCell));
+					gridManager.setCellOccupant(newCell.x, newCell.y, new Plant(newCell));
 					this.energy = 0;
 					gridManager.addToTurnQueue(this.cell);
 				}
@@ -88,7 +88,7 @@ export class Herbivore extends Organism {
 						newEnergy = this.energy;
 					}
 					let newCell: Cell = gridManager.getCell(newX, newY);
-					gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, newEnergy));
+					gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, newEnergy));
 					neighbors.forEach(neighbor => {
 						gridManager.addToTurnQueue(neighbor);
 					});
@@ -98,7 +98,7 @@ export class Herbivore extends Organism {
 						let newX = this.cell.x + randomSignedUnit();
 						let newY = this.cell.y + randomSignedUnit();
 						let newCell: Cell = gridManager.getCell(newX, newY);
-						gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, this.energy));
+						gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, this.energy));
 						gridManager.grid.clearCell(this.cell.x, this.cell.y);
 					} else {
 						gridManager.addToTurnQueue(this.cell);

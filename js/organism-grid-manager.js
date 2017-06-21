@@ -24,6 +24,7 @@ define(["require", "exports", "grid"], function (require, exports, grid_1) {
         };
         OrganismGridManager.prototype.setCellOccupant = function (x, y, occupant) {
             this.grid.setOccupant(x, y, occupant);
+            this.addToTurnQueue(this.getCell(x, y));
         };
         OrganismGridManager.prototype.getCell = function (x, y) {
             return this.grid.getCell(x, y);
@@ -58,7 +59,9 @@ define(["require", "exports", "grid"], function (require, exports, grid_1) {
             var x = index % this.grid.width;
             var y = Math.floor(index / this.grid.width);
             var organism = this.getCell(x, y).occupant;
-            organism.behavior(this);
+            if (organism.behavior) {
+                organism.behavior(this);
+            }
         };
         return OrganismGridManager;
     }());

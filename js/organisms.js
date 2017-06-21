@@ -61,7 +61,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                     if (emptyNeighbors.length > 0) {
                         var index = helpers_1.randomInt(0, emptyNeighbors.length);
                         var newCell = gridManager.grid.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y);
-                        gridManager.grid.setOccupant(newCell.x, newCell.y, new Plant(newCell));
+                        gridManager.setCellOccupant(newCell.x, newCell.y, new Plant(newCell));
                         this.energy = 0;
                         gridManager.addToTurnQueue(this.cell);
                     }
@@ -100,7 +100,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                             newEnergy = this.energy;
                         }
                         var newCell = gridManager.getCell(newX, newY);
-                        gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, newEnergy));
+                        gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, newEnergy));
                         neighbors.forEach(function (neighbor) {
                             gridManager.addToTurnQueue(neighbor);
                         });
@@ -111,7 +111,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                             var newX = this.cell.x + helpers_1.randomSignedUnit();
                             var newY = this.cell.y + helpers_1.randomSignedUnit();
                             var newCell = gridManager.getCell(newX, newY);
-                            gridManager.grid.setOccupant(newX, newY, new Herbivore(newCell, this.energy));
+                            gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, this.energy));
                             gridManager.grid.clearCell(this.cell.x, this.cell.y);
                         }
                         else {

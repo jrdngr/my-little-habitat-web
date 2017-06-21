@@ -31,6 +31,7 @@ export class OrganismGridManager implements GridManager {
 
     setCellOccupant(x: number, y: number, occupant: Occupant): void {
         this.grid.setOccupant(x, y, occupant);
+		this.addToTurnQueue(this.getCell(x, y));
     }
 	
     getCell(x: number, y: number): Cell {
@@ -70,7 +71,9 @@ export class OrganismGridManager implements GridManager {
 		let x = index % this.grid.width;
 		let y = Math.floor(index / this.grid.width);
 		let organism: Organism = <Organism>this.getCell(x, y).occupant;
-		organism.behavior(this);	
+		if (organism.behavior) {
+			organism.behavior(this);	
+		}
 	}
 
 }

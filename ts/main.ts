@@ -25,7 +25,7 @@ function init() {
 		let rect: ClientRect = canvas.getBoundingClientRect();
 		let [x, y] = getGridCoordinates(event, rect, xScale, yScale);
 		let cell: Cell = gridManager.getCell(x, y);
-		gridManager.grid.setOccupant(x, y, Organisms.getOrganism(selected, cell));
+		gridManager.setCellOccupant(x, y, Organisms.getOrganism(selected, cell));
 	}
 
 	let setSelectedElement = function() {

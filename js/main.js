@@ -18,7 +18,7 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
             var rect = canvas.getBoundingClientRect();
             var _a = getGridCoordinates(event, rect, xScale, yScale), x = _a[0], y = _a[1];
             var cell = gridManager.getCell(x, y);
-            gridManager.grid.setOccupant(x, y, Organisms.getOrganism(selected, cell));
+            gridManager.setCellOccupant(x, y, Organisms.getOrganism(selected, cell));
         };
         var setSelectedElement = function () {
             var selectedElement = document.getElementById("selected-organism");
