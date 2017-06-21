@@ -1,10 +1,10 @@
 define(["require", "exports", "organism-grid-manager", "organisms"], function (require, exports, organism_grid_manager_1, Organisms) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var GRID_WIDTH = 300;
+    var GRID_WIDTH = 200;
     var GRID_HEIGHT = GRID_WIDTH;
     var mouseDown = false;
-    var cellsPerStepMultiplier = 1;
+    var cellsPerStepMultiplier = 2;
     var selected = "plant";
     init();
     function init() {

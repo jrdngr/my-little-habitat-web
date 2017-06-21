@@ -1,6 +1,6 @@
 import { GridManager, Cell, Occupant } from "grid";
 import { OrganismGridManager } from "organism-grid-manager";
-import { randomInt, randomSignedUnit } from "helpers";
+import { randomInt, randomSignedUnit, randomPercentage } from "helpers";
 
 export const getOrganism = function(name: string, cell: Cell): Organism {
 	name = name.toLowerCase();
@@ -23,17 +23,6 @@ export class Organism extends Occupant {
 		this.behavior = behavior || function(){ };
 
 	}
-
-	getNeighborsOfType(neighbors: Cell[], name: string) {
-		let result: Cell[] = [];
-		neighbors.forEach(function(neighbor) {
-			if (neighbor && neighbor.occupant.name == name) {
-				result.push(neighbor);
-			}
-		});
-
-		return result;
-	}
 }
 
 export class Plant extends Organism {
@@ -42,22 +31,10 @@ export class Plant extends Organism {
 		this.energy = startEnergy;
 		this.behavior = function(grid: GridManager) {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid; 
-			let neighbors: Cell[] = gridManager.getNeighborhood(this.cell.x, this.cell.y);
-			if (this.energy < 1) {
-				if (randomInt(0, 100) == 1)
-				{
-					this.energy++;
-				}
-				gridManager.addToTurnQueue(this.cell);
+			if (randomPercentage(1)) {
+				gridManager.cloneRandom(this);
 			} else {
-				let emptyNeighbors = this.getNeighborsOfType(neighbors, "empty");
-				if (emptyNeighbors.length > 0) {
-					let index = randomInt(0, emptyNeighbors.length);
-					let newCell = gridManager.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y)
-					gridManager.setCellOccupant(newCell.x, newCell.y, new Plant(newCell));
-					this.energy = 0;
-					gridManager.addToTurnQueue(this.cell);
-				}
+				gridManager.addToTurnQueue(this);
 			}
 		}
 	}
@@ -69,11 +46,11 @@ export class Herbivore extends Organism {
 		this.energy = startEnergy;
 		this.behavior = function(grid: GridManager) {
 			let gridManager: OrganismGridManager = <OrganismGridManager>grid;
-			let neighbors: Cell[] = gridManager.getNeighborhood(this.cell.x, this.cell.y);
+			let neighbors: Cell[] = gridManager.getNeighborhood(this);
 			if (this.energy <= 0) {
-				gridManager.clearCell(this.cell.x, this.cell.y);
+				gridManager.kill(this);
 			} else {
-				let plantNeighbors = this.getNeighborsOfType(neighbors, "plant");
+				let plantNeighbors = gridManager.getNeighborhoodOfType(this, "plant");
 				if (plantNeighbors.length > 0) {
 					let index = randomInt(0, plantNeighbors.length);
 					let newX = plantNeighbors[index].x;
@@ -81,26 +58,25 @@ export class Herbivore extends Organism {
 					let newEnergy;
 					if (this.energy <= 200) {
 						newEnergy = this.energy + 5;
-						gridManager.clearCell(this.cell.x, this.cell.y);
+						gridManager.move(this, newX, newY);
+						gridManager.kill(this);
 					} else {
 						this.energy = Math.floor(this.energy / 2);
-						newEnergy = this.energy;
+						gridManager.clone(this, newX, newY);
 					}
-					let newCell: Cell = gridManager.getCell(newX, newY);
-					gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, newEnergy));
 					neighbors.forEach(neighbor => {
-						gridManager.addToTurnQueue(neighbor);
+						if (neighbor && neighbor.occupant) {
+							gridManager.addToTurnQueue(neighbor.occupant);
+						}
 					});
 				} else {
 					this.energy -= 3;
 					if (this.energy % 10 == 0) {
 						let newX = this.cell.x + randomSignedUnit();
 						let newY = this.cell.y + randomSignedUnit();
-						let newCell: Cell = gridManager.getCell(newX, newY);
-						gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, this.energy));
-						gridManager.clearCell(this.cell.x, this.cell.y);
+						gridManager.move(this, newX, newY);
 					} else {
-						gridManager.addToTurnQueue(this.cell);
+						gridManager.addToTurnQueue(this);
 					}
 				}
 			}

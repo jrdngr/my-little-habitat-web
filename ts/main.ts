@@ -2,16 +2,17 @@ import { OrganismGridManager } from "organism-grid-manager";
 import { GridManager, Cell } from "grid";
 import * as Organisms from "organisms";
 
-const GRID_WIDTH: number = 300;
+const GRID_WIDTH: number = 200;
 const GRID_HEIGHT: number = GRID_WIDTH;
 
 let mouseDown: boolean = false;
-let cellsPerStepMultiplier: number = 1;
+let cellsPerStepMultiplier: number = 2;
 let selected: string = "plant";
 
 init();
 
 function init() {
+
 	const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("canvas");
 	canvas.height = window.innerHeight;
 	canvas.width = canvas.height;

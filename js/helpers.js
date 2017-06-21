@@ -11,5 +11,9 @@ define(["require", "exports"], function (require, exports) {
         return 2 * randomInt(0, 2) - 1;
     }
     exports.randomSignedUnit = randomSignedUnit;
+    function randomPercentage(percentageAsInteger) {
+        return Math.random() < (percentageAsInteger / 100);
+    }
+    exports.randomPercentage = randomPercentage;
 });
 //# sourceMappingURL=helpers.js.map

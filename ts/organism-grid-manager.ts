@@ -1,5 +1,6 @@
 import { Grid, GridManager, Cell, Occupant } from "grid";
-import { Organism } from "organisms";
+import { Organism, getOrganism } from "organisms";
+import { randomInt } from "helpers";
 
 const MAX_CELLS_PER_STEP = 10000;
 
@@ -33,7 +34,7 @@ export class OrganismGridManager implements GridManager {
 
     setCellOccupant(x: number, y: number, occupant: Occupant): void {
         this.grid.setOccupant(x, y, occupant);
-		this.addToTurnQueue(this.getCell(x, y));
+		this.addToTurnQueue(occupant);
     }
 	
 	clearCell(x:number, y: number): void {
@@ -44,36 +45,43 @@ export class OrganismGridManager implements GridManager {
         return this.grid.getCell(x, y);
     }
 
-    getNeighborhood(x: number, y: number, name?: string) {
+	getNeighborhood(occupant: Occupant, useDiagonals: boolean = false): Cell[] {
+		return this.getNeighborhoodOfCell(occupant.cell.x, occupant.cell.y, useDiagonals);
+	}
+
+    getNeighborhoodOfCell(x: number, y: number, useDiagonals: boolean = false) {
 		let neighbors: Cell[] = [];
 		neighbors.push(this.grid.getCell(x, y));
 		neighbors.push(this.grid.getCell(x, y-1));
 		neighbors.push(this.grid.getCell(x+1, y));
 		neighbors.push(this.grid.getCell(x, y+1));
 		neighbors.push(this.grid.getCell(x-1, y));
-        neighbors.push(this.grid.getCell(x+1, y-1));
-        neighbors.push(this.grid.getCell(x+1, y+1));
-        neighbors.push(this.grid.getCell(x-1, y+1));
-        neighbors.push(this.grid.getCell(x-1, y-1));
-		if (name) {
-			let indicesToRemove: number[] = [];
-			neighbors.forEach(neighbor => {
-				if (neighbor.occupant.name != name) {
-					neighbor = null;		
-				}
-			});
+		if (useDiagonals) {
+			neighbors.push(this.grid.getCell(x+1, y-1));
+			neighbors.push(this.grid.getCell(x+1, y+1));
+			neighbors.push(this.grid.getCell(x-1, y+1));
+			neighbors.push(this.grid.getCell(x-1, y-1));
 		}
-
 		return neighbors;
+	}
+
+	getNeighborhoodOfType(occupant: Occupant, type: string, useDiagonals: boolean = false) {
+		return this.getNeighborhood(occupant, useDiagonals).filter(neighbor => {
+			if (neighbor) {
+				return neighbor.occupant.name == type;
+			} else {
+				return false;
+			}
+		});
 	}
 
 	getDimensions(): [number, number] {
 		return [this.grid.width, this.grid.height];
 	}
 
-    addToTurnQueue(cell: Cell) {
-		if (cell) {
-			this.turnQueue.push(cell.y * this.grid.width + cell.x); 
+    addToTurnQueue(occupant: Occupant) {
+		if (occupant && occupant.cell) {
+			this.turnQueue.push(occupant.cell.y * this.grid.width + occupant.cell.x); 
 		}
 	}
 
@@ -86,4 +94,46 @@ export class OrganismGridManager implements GridManager {
 		}
 	}
 
+	/*
+	 * Common beaviors
+	 */
+
+	 move(organism: Organism, newX: number, newY: number): void {
+		this.clone(organism, newX, newY, organism.energy);
+		this.kill(organism);
+	 }
+
+	 moveRandom(organism: Organism, availableCells?: Cell[]): void {
+		if (!availableCells) {
+			availableCells = this.getNeighborhoodOfType(organism, "empty");
+		}
+		if (availableCells.length > 0) {
+			this.cloneRandom(organism, availableCells);
+			this.kill(organism);
+		}
+	 }
+
+	 clone(organism: Organism, newX: number, newY: number, startingEnergy?: number): void {
+		let newCell: Cell = this.getCell(newX, newY);
+		let newOrganism: Organism = getOrganism(organism.name, newCell);
+		newOrganism.energy = startingEnergy || organism.energy;
+		this.setCellOccupant(newX, newY, newOrganism);
+		this.addToTurnQueue(organism);
+	 }
+
+	 cloneRandom(organism: Organism, availableCells?: Cell[]): void {
+		if (!availableCells) {
+			availableCells = this.getNeighborhoodOfType(organism, "empty");
+		}
+		if (availableCells.length > 0) {
+			let index = randomInt(0, availableCells.length);
+			let newX = availableCells[index].x;
+			let newY =  availableCells[index].y;
+			this.clone(organism, newX, newY);
+		}
+	 }
+
+	 kill(organism: Organism) {
+		 this.clearCell(organism.cell.x, organism.cell.y);
+	 }
 }

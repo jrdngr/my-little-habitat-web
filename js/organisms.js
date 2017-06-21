@@ -29,15 +29,6 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             _this.behavior = behavior || function () { };
             return _this;
         }
-        Organism.prototype.getNeighborsOfType = function (neighbors, name) {
-            var result = [];
-            neighbors.forEach(function (neighbor) {
-                if (neighbor && neighbor.occupant.name == name) {
-                    result.push(neighbor);
-                }
-            });
-            return result;
-        };
         return Organism;
     }(grid_1.Occupant));
     exports.Organism = Organism;
@@ -49,22 +40,11 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             _this.energy = startEnergy;
             _this.behavior = function (grid) {
                 var gridManager = grid;
-                var neighbors = gridManager.getNeighborhood(this.cell.x, this.cell.y);
-                if (this.energy < 1) {
-                    if (helpers_1.randomInt(0, 100) == 1) {
-                        this.energy++;
-                    }
-                    gridManager.addToTurnQueue(this.cell);
+                if (helpers_1.randomPercentage(1)) {
+                    gridManager.cloneRandom(this);
                 }
                 else {
-                    var emptyNeighbors = this.getNeighborsOfType(neighbors, "empty");
-                    if (emptyNeighbors.length > 0) {
-                        var index = helpers_1.randomInt(0, emptyNeighbors.length);
-                        var newCell = gridManager.getCell(emptyNeighbors[index].x, emptyNeighbors[index].y);
-                        gridManager.setCellOccupant(newCell.x, newCell.y, new Plant(newCell));
-                        this.energy = 0;
-                        gridManager.addToTurnQueue(this.cell);
-                    }
+                    gridManager.addToTurnQueue(this);
                 }
             };
             return _this;
@@ -80,12 +60,12 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
             _this.energy = startEnergy;
             _this.behavior = function (grid) {
                 var gridManager = grid;
-                var neighbors = gridManager.getNeighborhood(this.cell.x, this.cell.y);
+                var neighbors = gridManager.getNeighborhood(this);
                 if (this.energy <= 0) {
-                    gridManager.clearCell(this.cell.x, this.cell.y);
+                    gridManager.kill(this);
                 }
                 else {
-                    var plantNeighbors = this.getNeighborsOfType(neighbors, "plant");
+                    var plantNeighbors = gridManager.getNeighborhoodOfType(this, "plant");
                     if (plantNeighbors.length > 0) {
                         var index = helpers_1.randomInt(0, plantNeighbors.length);
                         var newX = plantNeighbors[index].x;
@@ -93,16 +73,17 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                         var newEnergy = void 0;
                         if (this.energy <= 200) {
                             newEnergy = this.energy + 5;
-                            gridManager.clearCell(this.cell.x, this.cell.y);
+                            gridManager.move(this, newX, newY);
+                            gridManager.kill(this);
                         }
                         else {
                             this.energy = Math.floor(this.energy / 2);
-                            newEnergy = this.energy;
+                            gridManager.clone(this, newX, newY);
                         }
-                        var newCell = gridManager.getCell(newX, newY);
-                        gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, newEnergy));
                         neighbors.forEach(function (neighbor) {
-                            gridManager.addToTurnQueue(neighbor);
+                            if (neighbor && neighbor.occupant) {
+                                gridManager.addToTurnQueue(neighbor.occupant);
+                            }
                         });
                     }
                     else {
@@ -110,12 +91,10 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                         if (this.energy % 10 == 0) {
                             var newX = this.cell.x + helpers_1.randomSignedUnit();
                             var newY = this.cell.y + helpers_1.randomSignedUnit();
-                            var newCell = gridManager.getCell(newX, newY);
-                            gridManager.setCellOccupant(newX, newY, new Herbivore(newCell, this.energy));
-                            gridManager.clearCell(this.cell.x, this.cell.y);
+                            gridManager.move(this, newX, newY);
                         }
                         else {
-                            gridManager.addToTurnQueue(this.cell);
+                            gridManager.addToTurnQueue(this);
                         }
                     }
                 }
