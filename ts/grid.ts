@@ -124,7 +124,7 @@ export class Occupant {
 	}
 }
 
-class Empty extends Occupant {
+export class Empty extends Occupant {
 	constructor(cell: Cell) {
 		super("empty", "black", cell);
 	}

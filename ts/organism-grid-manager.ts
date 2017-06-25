@@ -51,7 +51,6 @@ export class OrganismGridManager implements GridManager {
 
     getNeighborsOfCell(x: number, y: number, useDiagonals: boolean = false) {
 		let neighbors: Cell[] = [];
-		neighbors.push(this.grid.getCell(x, y));
 		neighbors.push(this.grid.getCell(x, y-1));
 		neighbors.push(this.grid.getCell(x+1, y));
 		neighbors.push(this.grid.getCell(x, y+1));
@@ -66,9 +65,13 @@ export class OrganismGridManager implements GridManager {
 	}
 
 	getNeighborsOfType(occupant: Occupant, type: string, useDiagonals: boolean = false) {
+		return this.getNeighborsOfTypes(occupant, [type], useDiagonals);
+	}
+
+	getNeighborsOfTypes(occupant: Occupant, types: string[], useDiagonals: boolean = false) {
 		return this.getNeighbors(occupant, useDiagonals).filter(neighbor => {
 			if (neighbor) {
-				return neighbor.occupant.name == type;
+				return types.indexOf(neighbor.occupant.name) != -1;
 			} else {
 				return false;
 			}
@@ -110,13 +113,8 @@ export class OrganismGridManager implements GridManager {
 	 }
 
 	 moveRandom(organism: Organism, availableCells?: Cell[]): void {
-		if (!availableCells) {
-			availableCells = this.getNeighborsOfType(organism, "empty");
-		}
-		if (availableCells.length > 0) {
-			this.cloneRandom(organism, availableCells);
-			this.kill(organism);
-		}
+		this.cloneRandom(organism, availableCells);
+		this.kill(organism);
 	 }
 
 	 clone(organism: Organism, newX: number, newY: number, startingEnergy?: number): void {
@@ -125,6 +123,7 @@ export class OrganismGridManager implements GridManager {
 		newOrganism.energy = startingEnergy || organism.energy;
 		this.setCellOccupant(newX, newY, newOrganism);
 		this.addToTurnQueue(organism);
+		this.addCellsToTurnQueue(this.getNeighborsOfCell(newX, newY));
 	 }
 
 	 cloneRandom(organism: Organism, availableCells?: Cell[]): void {
@@ -142,4 +141,9 @@ export class OrganismGridManager implements GridManager {
 	 kill(organism: Organism) {
 		 this.clearCell(organism.cell.x, organism.cell.y);
 	 }
-}
+
+	 setType(x: number, y: number, type: string) {
+		let newCell = this.getCell(x, y);
+		this.setCellOccupant(x, y, getOrganism(type, newCell));
+	 }
+ }

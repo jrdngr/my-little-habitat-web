@@ -1,46 +1,51 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 define(["require", "exports", "grid", "helpers"], function (require, exports, grid_1, helpers_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getOrganism = function (name, cell) {
-        switch (name) {
-            case "plant":
+    exports.PLANT = "plant";
+    exports.DEAD_PLANT = "dead-plant";
+    exports.HERBIVORE = "herbivore";
+    exports.PARASITE = "parasite";
+    exports.VINE = "vine";
+    exports.WALL = "wall";
+    exports.EMPTY = "empty";
+    exports.getOrganism = function (type, cell) {
+        switch (type) {
+            case exports.WALL:
+                return new Wall(cell);
+            case exports.PLANT:
                 return new Plant(cell);
-            case "herbivore":
+            case exports.HERBIVORE:
                 return new Herbivore(cell);
-            case "parasite":
+            case exports.PARASITE:
                 return new Parasite(cell);
+            case exports.DEAD_PLANT:
+                return new DeadPlant(cell);
+            case exports.VINE:
+                return new Vine(cell);
+            case exports.EMPTY:
+                return (new grid_1.Empty(cell));
             default:
-                return new Plant(cell);
+                throw "Invalid type";
         }
     };
-    var Organism = (function (_super) {
-        __extends(Organism, _super);
-        function Organism(name, color, cell, behavior) {
-            var _this = _super.call(this, name, color, cell) || this;
-            _this.behavior = behavior || function () { };
-            return _this;
+    class Organism extends grid_1.Occupant {
+        constructor(name, color, cell, behavior) {
+            super(name, color, cell);
+            this.behavior = behavior || function () { };
         }
-        return Organism;
-    }(grid_1.Occupant));
+    }
     exports.Organism = Organism;
-    var Plant = (function (_super) {
-        __extends(Plant, _super);
-        function Plant(cell, startEnergy) {
-            if (startEnergy === void 0) { startEnergy = 0; }
-            var _this = _super.call(this, "plant", "green", cell) || this;
-            _this.energy = startEnergy;
-            _this.behavior = function (grid) {
-                var gridManager = grid;
+    class Wall extends Organism {
+        constructor(cell) {
+            super(exports.WALL, "lightgray", cell);
+        }
+    }
+    exports.Wall = Wall;
+    class Plant extends Organism {
+        constructor(cell, startEnergy = 0) {
+            super(exports.PLANT, "green", cell);
+            this.energy = startEnergy;
+            this.behavior = function (gridManager) {
                 if (helpers_1.randomPercentage(1)) {
                     gridManager.cloneRandom(this);
                 }
@@ -48,29 +53,45 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                     gridManager.addToTurnQueue(this);
                 }
             };
-            return _this;
         }
-        return Plant;
-    }(Organism));
+    }
     exports.Plant = Plant;
-    var Herbivore = (function (_super) {
-        __extends(Herbivore, _super);
-        function Herbivore(cell, startEnergy) {
-            if (startEnergy === void 0) { startEnergy = 50; }
-            var _this = _super.call(this, "herbivore", "blue", cell) || this;
-            _this.energy = startEnergy;
-            _this.behavior = function (grid) {
-                var gridManager = grid;
-                var neighbors = gridManager.getNeighbors(this);
+    class DeadPlant extends Organism {
+        constructor(cell, startEnergy = 100) {
+            super(exports.DEAD_PLANT, "darkgreen", cell);
+            this.energy = startEnergy;
+            this.behavior = function (gridManager) {
+                if (helpers_1.randomPercentage(15)) {
+                    this.energy--;
+                }
+                if (this.energy <= 0) {
+                    gridManager.addCellsToTurnQueue(gridManager.getNeighbors(this));
+                    gridManager.kill(this);
+                    return;
+                }
+                gridManager.addToTurnQueue(this);
+            };
+        }
+    }
+    exports.DeadPlant = DeadPlant;
+    class Herbivore extends Organism {
+        constructor(cell, startEnergy = 50) {
+            super(exports.HERBIVORE, "blue", cell);
+            this.energy = startEnergy;
+            this.behavior = function (gridManager) {
+                let neighbors = gridManager.getNeighbors(this);
                 if (this.energy <= 0) {
                     gridManager.kill(this);
                     return;
                 }
-                var plantNeighbors = gridManager.getNeighborsOfType(this, "plant");
+                let plantNeighbors = gridManager.getNeighborsOfType(this, exports.PLANT);
                 if (plantNeighbors.length > 0) {
                     if (this.energy <= 200) {
                         this.energy += 5;
+                        let oldX = this.cell.x;
+                        let oldY = this.cell.y;
                         gridManager.moveRandom(this, plantNeighbors);
+                        gridManager.setType(oldX, oldY, exports.DEAD_PLANT);
                     }
                     else {
                         this.energy /= 2;
@@ -79,34 +100,29 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                     gridManager.addCellsToTurnQueue(neighbors);
                 }
                 else {
-                    this.energy -= 10;
+                    this.energy -= 2;
                     if (helpers_1.randomPercentage(10)) {
-                        gridManager.moveRandom(this);
+                        gridManager.moveRandom(this, gridManager.getNeighborsOfTypes(this, ["empty", exports.HERBIVORE, exports.DEAD_PLANT], false));
                     }
                     else {
                         gridManager.addToTurnQueue(this);
                     }
                 }
             };
-            return _this;
         }
-        return Herbivore;
-    }(Organism));
+    }
     exports.Herbivore = Herbivore;
-    var Parasite = (function (_super) {
-        __extends(Parasite, _super);
-        function Parasite(cell, startEnergy) {
-            if (startEnergy === void 0) { startEnergy = 10; }
-            var _this = _super.call(this, "parasite", "red", cell) || this;
-            _this.energy = startEnergy;
-            _this.behavior = function (grid) {
-                var gridManager = grid;
+    class Parasite extends Organism {
+        constructor(cell, startEnergy = 10) {
+            super(exports.PARASITE, "red", cell);
+            this.energy = startEnergy;
+            this.behavior = function (gridManager) {
                 if (this.energy <= 0) {
                     gridManager.kill(this);
                     return;
                 }
-                var parasiteNeighbors = gridManager.getNeighborsOfType(this, "parasite", true);
-                var plantNeighbors = gridManager.getNeighborsOfType(this, "plant", true);
+                let parasiteNeighbors = gridManager.getNeighborsOfType(this, exports.PARASITE, true);
+                let plantNeighbors = gridManager.getNeighborsOfType(this, exports.PLANT, true);
                 if (parasiteNeighbors.length >= 5 || plantNeighbors.length == 0) {
                     this.energy -= 1;
                     gridManager.addToTurnQueue(this);
@@ -123,10 +139,17 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                     }
                 }
             };
-            return _this;
         }
-        return Parasite;
-    }(Organism));
+    }
     exports.Parasite = Parasite;
+    class Vine extends Organism {
+        constructor(cell, startEnergy = 0) {
+            super(exports.VINE, "purple", cell);
+            this.energy = startEnergy;
+            this.behavior = function (gridManager) {
+            };
+        }
+    }
+    exports.Vine = Vine;
 });
 //# sourceMappingURL=organisms.js.map

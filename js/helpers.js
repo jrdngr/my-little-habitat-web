@@ -15,5 +15,26 @@ define(["require", "exports"], function (require, exports) {
         return Math.random() < (percentageAsInteger / 100);
     }
     exports.randomPercentage = randomPercentage;
+    function integerSequence(min, max, step = 1) {
+        let result = [];
+        max += 1;
+        for (let i = min; i < max; i += step) {
+            result.push(i);
+        }
+        return result;
+    }
+    exports.integerSequence = integerSequence;
+    function randomOrdering(elements) {
+        let swap = function (array, firstIndex, secondIndex) {
+            let temp = array[firstIndex];
+            array[firstIndex] = array[secondIndex];
+            array[secondIndex] = temp;
+        };
+        for (let i = 0; i < elements.length; i++) {
+            swap(elements, randomInt(0, elements.length), randomInt(0, elements.length));
+        }
+        return elements;
+    }
+    exports.randomOrdering = randomOrdering;
 });
 //# sourceMappingURL=helpers.js.map
