@@ -31,6 +31,7 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
     class Organism extends grid_1.Occupant {
         constructor(name, color, cell, behavior) {
             super(name, color, cell);
+            this.parameters = new Map();
             this.behavior = behavior || function () { };
         }
     }
@@ -45,8 +46,9 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
         constructor(cell, startEnergy = 0) {
             super(exports.PLANT, "green", cell);
             this.energy = startEnergy;
+            this.parameters.set("chanceToSplit", 1);
             this.behavior = function (gridManager) {
-                if (helpers_1.randomPercentage(1)) {
+                if (helpers_1.randomPercentage(this.parameters.get("chanceToSplit"))) {
                     gridManager.cloneRandom(this);
                 }
                 else {
@@ -60,8 +62,9 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
         constructor(cell, startEnergy = 100) {
             super(exports.DEAD_PLANT, "darkgreen", cell);
             this.energy = startEnergy;
+            this.parameters.set("chanceToLoseEnergy", 5);
             this.behavior = function (gridManager) {
-                if (helpers_1.randomPercentage(15)) {
+                if (helpers_1.randomPercentage(this.parameters.get("chanceToLoseEnergy"))) {
                     this.energy--;
                 }
                 if (this.energy <= 0) {
@@ -77,7 +80,13 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
     class Herbivore extends Organism {
         constructor(cell, startEnergy = 50) {
             super(exports.HERBIVORE, "blue", cell);
+            this.wait = 0;
             this.energy = startEnergy;
+            this.parameters.set("energyToSplit", 200);
+            this.parameters.set("energyPerPlant", 5);
+            this.parameters.set("moveCost", 10);
+            this.parameters.set("waitAfterMove", 10);
+            this.parameters.set("waitAfterClone", 50);
             this.behavior = function (gridManager) {
                 let neighbors = gridManager.getNeighbors(this);
                 if (this.energy <= 0) {
@@ -85,27 +94,33 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                     return;
                 }
                 let plantNeighbors = gridManager.getNeighborsOfType(this, exports.PLANT);
-                if (plantNeighbors.length > 0) {
-                    if (this.energy <= 200) {
-                        this.energy += 5;
+                if (this.wait <= 0 && plantNeighbors.length > 0) {
+                    if (this.energy <= this.parameters.get("energyToSplit")) {
+                        this.energy += this.parameters.get("energyPerPlant");
                         let oldX = this.cell.x;
                         let oldY = this.cell.y;
-                        gridManager.moveRandom(this, plantNeighbors);
+                        let clone = gridManager.moveRandom(this, plantNeighbors);
+                        clone.occupant.wait = this.parameters.get("waitAfterMove");
                         gridManager.setType(oldX, oldY, exports.DEAD_PLANT);
                     }
                     else {
                         this.energy /= 2;
-                        gridManager.cloneRandom(this, plantNeighbors);
+                        let clone = gridManager.cloneRandom(this, plantNeighbors);
+                        clone.occupant.wait = this.parameters.get("waitAfterClone");
                     }
                     gridManager.addCellsToTurnQueue(neighbors);
                 }
                 else {
-                    this.energy -= 2;
-                    if (helpers_1.randomPercentage(10)) {
-                        gridManager.moveRandom(this, gridManager.getNeighborsOfTypes(this, ["empty", exports.HERBIVORE, exports.DEAD_PLANT], false));
+                    if (this.wait > 0) {
+                        this.wait--;
+                        gridManager.addToTurnQueue(this);
                     }
                     else {
-                        gridManager.addToTurnQueue(this);
+                        this.energy -= this.parameters.get("moveCost");
+                        let newPos = gridManager.moveRandom(this, gridManager.getNeighborsOfTypes(this, ["empty", exports.HERBIVORE, exports.DEAD_PLANT], false));
+                        if (newPos && newPos.occupant) {
+                            newPos.occupant.wait = this.parameters.get("waitAfterMove");
+                        }
                     }
                 }
             };
@@ -116,6 +131,8 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
         constructor(cell, startEnergy = 10) {
             super(exports.PARASITE, "red", cell);
             this.energy = startEnergy;
+            this.parameters.set("overpopulation", 5);
+            this.parameters.set("energyToSplit", 350);
             this.behavior = function (gridManager) {
                 if (this.energy <= 0) {
                     gridManager.kill(this);
@@ -123,15 +140,15 @@ define(["require", "exports", "grid", "helpers"], function (require, exports, gr
                 }
                 let parasiteNeighbors = gridManager.getNeighborsOfType(this, exports.PARASITE, true);
                 let plantNeighbors = gridManager.getNeighborsOfType(this, exports.PLANT, true);
-                if (parasiteNeighbors.length >= 5 || plantNeighbors.length == 0) {
-                    this.energy -= 1;
+                if (parasiteNeighbors.length >= this.parameters.get("overpopulation") || plantNeighbors.length == 0) {
+                    this.energy--;
                     gridManager.addToTurnQueue(this);
                 }
-                else if (parasiteNeighbors.length < 6) {
-                    this.energy += 1;
+                else {
+                    this.energy++;
                     gridManager.addToTurnQueue(this);
                 }
-                if (this.energy > 250) {
+                if (this.energy > this.parameters.get("energyToSplit")) {
                     if (plantNeighbors.length > 0) {
                         this.energy = 1;
                         gridManager.cloneRandom(this, plantNeighbors);

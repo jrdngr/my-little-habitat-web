@@ -33,12 +33,12 @@ export const getOrganism = function(type: string, cell: Cell): Organism {
 
 export class Organism extends Occupant {
 	energy: number;
+	parameters: Map<string, number> = new Map();
 	behavior: (gridManager: OrganismGridManager) => void;
 
 	constructor(name: string, color: string, cell: Cell, behavior?) {
 		super(name, color, cell);
 		this.behavior = behavior || function(){ };
-
 	}
 }
 
@@ -52,8 +52,10 @@ export class Plant extends Organism {
 	constructor(cell: Cell, startEnergy: number = 0) {
 		super(PLANT, "green", cell);
 		this.energy = startEnergy;
+		this.parameters.set("chanceToSplit", 1);
+
 		this.behavior = function(gridManager: OrganismGridManager) {
-			if (randomPercentage(1)) {
+			if (randomPercentage(this.parameters.get("chanceToSplit"))) {
 				gridManager.cloneRandom(this);
 			} else {
 				gridManager.addToTurnQueue(this);
@@ -66,8 +68,10 @@ export class DeadPlant extends Organism {
 	constructor(cell: Cell, startEnergy: number = 100) {
 		super(DEAD_PLANT, "darkgreen", cell);
 		this.energy = startEnergy;
+		this.parameters.set("chanceToLoseEnergy", 5);
+
 		this.behavior = function(gridManager: OrganismGridManager) {
-			if (randomPercentage(15)) {
+			if (randomPercentage(this.parameters.get("chanceToLoseEnergy"))) {
 				this.energy--;
 			}
 			if (this.energy <= 0) {
@@ -81,9 +85,18 @@ export class DeadPlant extends Organism {
 }
 
 export class Herbivore extends Organism {
+
+	wait: number = 0;
+
 	constructor(cell: Cell, startEnergy: number = 50) {
 		super(HERBIVORE, "blue", cell);
 		this.energy = startEnergy;
+		this.parameters.set("energyToSplit", 200);
+		this.parameters.set("energyPerPlant", 5);
+		this.parameters.set("moveCost", 10);
+		this.parameters.set("waitAfterMove", 10);
+		this.parameters.set("waitAfterClone", 50);
+
 		this.behavior = function(gridManager: OrganismGridManager) {
 			let neighbors: Cell[] = gridManager.getNeighbors(this);
 			if (this.energy <= 0) {
@@ -91,24 +104,30 @@ export class Herbivore extends Organism {
 				return;
 			} 
 			let plantNeighbors = gridManager.getNeighborsOfType(this, PLANT);
-			if (plantNeighbors.length > 0) {
-				if (this.energy <= 200) {
-					this.energy += 5;
+			if (this.wait <= 0 && plantNeighbors.length > 0) {
+				if (this.energy <= this.parameters.get("energyToSplit")) {
+					this.energy += this.parameters.get("energyPerPlant");
 					let oldX = this.cell.x;
 					let oldY = this.cell.y;
-					gridManager.moveRandom(this, plantNeighbors);
+					let clone = gridManager.moveRandom(this, plantNeighbors);
+					(<Herbivore>clone.occupant).wait = this.parameters.get("waitAfterMove");
 					gridManager.setType(oldX, oldY, DEAD_PLANT);
 				} else {
 					this.energy /= 2;
-					gridManager.cloneRandom(this, plantNeighbors);
+					let clone = gridManager.cloneRandom(this, plantNeighbors);
+					(<Herbivore>clone.occupant).wait = this.parameters.get("waitAfterClone");
 				}
 				gridManager.addCellsToTurnQueue(neighbors);
 			} else {
-				this.energy -= 2;
-				if (randomPercentage(10)) {
-					gridManager.moveRandom(this, gridManager.getNeighborsOfTypes(this, ["empty", HERBIVORE, DEAD_PLANT], false));
-				} else {
+				if (this.wait > 0) {
+					this.wait--;
 					gridManager.addToTurnQueue(this);
+				} else {
+					this.energy -= this.parameters.get("moveCost");
+					let newPos = gridManager.moveRandom(this, gridManager.getNeighborsOfTypes(this, ["empty", HERBIVORE, DEAD_PLANT], false));
+					if (newPos && newPos.occupant) {
+						(<Herbivore>newPos.occupant).wait = this.parameters.get("waitAfterMove");
+					}
 				}
 			}
 		}
@@ -119,6 +138,9 @@ export class Parasite extends Organism {
 	constructor(cell: Cell, startEnergy: number = 10) {
 		super(PARASITE, "red", cell);
 		this.energy = startEnergy;
+		this.parameters.set("overpopulation", 5);
+		this.parameters.set("energyToSplit", 350);
+
 		this.behavior = function(gridManager: OrganismGridManager) {
 			if (this.energy <= 0) {
 				gridManager.kill(this);
@@ -126,14 +148,14 @@ export class Parasite extends Organism {
 			}
 			let parasiteNeighbors = gridManager.getNeighborsOfType(this, PARASITE, true);
 			let plantNeighbors = gridManager.getNeighborsOfType(this, PLANT, true);
-			if (parasiteNeighbors.length >= 5 || plantNeighbors.length == 0) {
-				this.energy -= 1;
+			if (parasiteNeighbors.length >= this.parameters.get("overpopulation") || plantNeighbors.length == 0) {
+				this.energy--;
 				gridManager.addToTurnQueue(this);
-			} else if (parasiteNeighbors.length < 6) {
-				this.energy += 1;
+			} else {
+				this.energy++;
 				gridManager.addToTurnQueue(this);
 			}
-			if (this.energy > 250) { 
+			if (this.energy > this.parameters.get("energyToSplit")) { 
 				if (plantNeighbors.length > 0) {
 					this.energy = 1;
 					gridManager.cloneRandom(this, plantNeighbors);
@@ -148,6 +170,8 @@ export class Vine extends Organism {
 	constructor(cell: Cell) {
 		super(VINE, "purple", cell);
 		this.energy = 0;
+
+
 		this.behavior = function(gridManager: OrganismGridManager) {
 			let vineNeighbors: Cell[] = gridManager.getNeighborsOfType(this, VINE);
 			if (vineNeighbors.length < 3) {

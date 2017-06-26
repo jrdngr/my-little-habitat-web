@@ -20,6 +20,9 @@ export class OrganismGridManager implements GridManager {
     step() {
 		let cellsPerStep = Math.min(this.turnQueue.length * this.cellsPerStepMultiplier, MAX_CELLS_PER_STEP);
 		let cellsProcessed = 0;
+		if (this.turnQueue.length > 40000) {
+			console.log(this.turnQueue.length);
+		}
 		while (cellsProcessed < cellsPerStep) {
 			if (this.turnQueue.length > 0) {
 				let index = this.turnQueue.shift();
