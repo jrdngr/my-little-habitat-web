@@ -87,12 +87,14 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
          * Common beaviors
          */
         move(organism, newX, newY) {
-            this.clone(organism, newX, newY, organism.energy);
+            let newOrganism = organism;
             this.kill(organism);
+            return this.clone(newOrganism, newX, newY, organism.energy);
         }
         moveRandom(organism, availableCells) {
-            this.cloneRandom(organism, availableCells);
+            let newOrganism = organism;
             this.kill(organism);
+            return this.cloneRandom(newOrganism, availableCells);
         }
         clone(organism, newX, newY, startingEnergy) {
             let newCell = this.getCell(newX, newY);
@@ -101,6 +103,7 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
             this.setCellOccupant(newX, newY, newOrganism);
             this.addToTurnQueue(organism);
             this.addCellsToTurnQueue(this.getNeighborsOfCell(newX, newY));
+            return this.getCell(newX, newY);
         }
         cloneRandom(organism, availableCells) {
             if (!availableCells) {
@@ -110,7 +113,7 @@ define(["require", "exports", "grid", "organisms", "helpers"], function (require
                 let index = helpers_1.randomInt(0, availableCells.length);
                 let newX = availableCells[index].x;
                 let newY = availableCells[index].y;
-                this.clone(organism, newX, newY);
+                return this.clone(organism, newX, newY);
             }
         }
         kill(organism) {

@@ -71,7 +71,7 @@ function createControls(): void {
 	selections.push(<HTMLInputElement>document.getElementById('organism-plant'));
 	selections.push(<HTMLInputElement>document.getElementById('organism-herbivore'));
 	selections.push(<HTMLInputElement>document.getElementById('organism-parasite'));
-	selections.push(<HTMLInputElement>document.getElementById('organism-vine'));
+	//selections.push(<HTMLInputElement>document.getElementById('organism-vine'));
 	selections.push(<HTMLInputElement>document.getElementById('organism-wall'));
 	selections.push(<HTMLInputElement>document.getElementById('organism-empty'));
 

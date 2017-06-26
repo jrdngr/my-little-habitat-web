@@ -145,10 +145,31 @@ export class Parasite extends Organism {
 }
 
 export class Vine extends Organism {
-	constructor(cell: Cell, startEnergy: number = 0) {
+	constructor(cell: Cell) {
 		super(VINE, "purple", cell);
-		this.energy = startEnergy;
+		this.energy = 0;
 		this.behavior = function(gridManager: OrganismGridManager) {
+			let vineNeighbors: Cell[] = gridManager.getNeighborsOfType(this, VINE);
+			if (vineNeighbors.length < 3) {
+				let neighbors: Cell[] = gridManager.getNeighbors(this, true);
+				let ordering = randomOrdering(integerSequence(0, 8));
+				let direction: number = randomInt(0, 8);
+				for (let i = 0; i < ordering.length; i++) {
+					let index = ordering[i];
+					let check: Cell = neighbors[index];
+					if (check && check.occupant && check.occupant.name == VINE) {
+						direction = index + 3 + randomInt(0, 3);
+					}
+				}
+				let target: Cell = neighbors[direction];
+				if (target) {
+					gridManager.clone(this, target.x, target.y);
+				}
+			}
+			vineNeighbors = gridManager.getNeighborsOfType(this, VINE);
+			if (vineNeighbors.length < 3) {
+				gridManager.addToTurnQueue(this);
+			}
 		}
 	}
 }

@@ -55,7 +55,7 @@ define(["require", "exports", "organism-grid-manager", "organisms"], function (r
         selections.push(document.getElementById('organism-plant'));
         selections.push(document.getElementById('organism-herbivore'));
         selections.push(document.getElementById('organism-parasite'));
-        selections.push(document.getElementById('organism-vine'));
+        //selections.push(<HTMLInputElement>document.getElementById('organism-vine'));
         selections.push(document.getElementById('organism-wall'));
         selections.push(document.getElementById('organism-empty'));
         selections.forEach(selection => selection.onclick = selectionChanged);
